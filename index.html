@@ -1,0 +1,44 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <script src="https://unpkg.com/pdf-lib"></script>
+    <script src="https://unpkg.com/qrcode-generator"></script>
+  </head>
+
+  <body>
+    <input type="text" id="msg" value="Hello PDF World!" onchange="update(this.value)" />
+    <div id="qr" style="display: none"></div>
+    <iframe id="pdf" style="width: 100%; height: 100%;"></iframe>
+  </body>
+
+  <script>
+    async function createPdf(svg_path) {
+      const pdfDoc = await PDFLib.PDFDocument.create();
+      width = 350;
+      height = 400;
+      const page = pdfDoc.addPage([width, height]);
+      page.moveTo(width/2, height/2);
+      // page.drawText(msg);
+      page.drawSvgPath(svg_path, {color: PDFLib.rgb(0, 0, 0)});
+      const pdfDataUri = await pdfDoc.saveAsBase64({ dataUri: true });
+      document.getElementById('pdf').src = pdfDataUri;
+    }
+    function create_qrcode(text, typeNumber, errorCorrectionLevel, mode, mb) {
+      qrcode.stringToBytes = qrcode.stringToBytesFuncs[mb];
+      var qr = qrcode(typeNumber || 4, errorCorrectionLevel || 'M');
+      qr.addData(text, mode);
+      qr.make();
+      // r = qr.createTableTag();
+      r = qr.createSvgTag({ alt: '</svg>puke'});
+      // r = qr.createImgTag();
+      return r;
+    };
+    function update(msg) {
+      qr_div = document.getElementById('qr');
+      qr_div.innerHTML = create_qrcode(msg, 0, 'M', 'Byte', 'UTF-8');
+      qr_path_data = qr_div.getElementsByTagName('svg')[0].getElementsByTagName('path')[0].getAttribute('d');
+      createPdf(qr_path_data);
+    }
+    update(document.getElementById('msg').value);
+  </script>
+</html>
