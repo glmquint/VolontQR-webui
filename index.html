@@ -47,7 +47,15 @@
       const filePdfDoc = file ? await PDFLib.PDFDocument.load(file) : null;
 
       await Promise.all(links.map(async link => {
-        svg_tag = create_qrcode(link, 10, 'M', 'Byte', 'UTF-8');
+        let i;
+        for (i=1; i<41; i++) {
+          try {
+            svg_tag = create_qrcode(link, i, 'M', 'Byte', 'UTF-8');
+            break;
+          } catch {
+            continue;
+          }
+        }
         let svg_path = svg_tag.split('<path d="')[1].split(' " stroke="transparent"')[0];
 
         width = 350;
@@ -62,8 +70,10 @@
         } else {
           page = await pdfDoc.addPage([width, height]);
         }
-        w = 130;
-        h = 130;
+        // TODO: use https://kazuhikoarase.github.io/qrcode-generator/js/demo/
+        // to find all generated QR codes sizes
+        w = [58, 66, 74, 82, 90, 98, 106, 114, 122, 130][i-1];
+        h = w;
         page.moveTo(width/2 - w/2, height/2 - h/2); // (0, 0) is bottom-left corner
         page.drawRectangle({width: w, height: h, color: PDFLib.rgb(1, 1, 1)});
         page.moveTo(width/2 - w/2, height/2 + h/2); // (0, 0) is bottom-left corner
