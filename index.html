@@ -18,7 +18,9 @@
         <textarea id="msg" style="width: 100%; height: 40%; box-sizing: border-box; font-family: monospace; font-size: 16px;" placeholder="Enter text to generate QR code" onchange="update()"></textarea>
         <h2>3. (Optional) Pimp your QR!</h2>
         <input type="color" id="bg-color" name="bg-color" value="#ffffff" onchange="update()"/>
-        <label for="bg-color">Background Color</label>
+        <label for="bg-color">Background Color ( </label>
+        <input type="checkbox" id="transparent-bg" name="transparent-bg" value="1" onchange="update()"/>
+        <label for="transparent-bg"> Transparent )</label>
         <br>
         <input type="color" id="qr-color" name="qr-color" value="#000000" onchange="update()"/>
         <label for="qr-color">QR Color</label>

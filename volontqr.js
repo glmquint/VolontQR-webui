@@ -19,7 +19,7 @@ function postCreatePdf() {
   const progress = document.getElementById('progress');
   progress.value = 0; // Reset progress bar
 }
-async function createPdf(links, file, bg_color, qr_color, error_correction_level, scale, offsetX, offsetY, preview=true) {
+async function createPdf(links, file, bg_color, transparent_bg, qr_color, error_correction_level, scale, offsetX, offsetY, preview=true) {
   updateProgressMsg('Creating PDF...');
   const pdfDoc = await PDFLib.PDFDocument.create();
 
@@ -48,7 +48,7 @@ async function createPdf(links, file, bg_color, qr_color, error_correction_level
       page = await pdfDoc.addPage([width, height]);
     }
 
-    placeQR(link, error_correction_level, bg_color, qr_color, width, height, page, scale, offsetX, offsetY);
+    placeQR(link, error_correction_level, bg_color, transparent_bg, qr_color, width, height, page, scale, offsetX, offsetY);
 
     console.log('Page created for link:', link);
     // progress.value += 1; // Increment progress bar
@@ -77,7 +77,7 @@ async function createPdf(links, file, bg_color, qr_color, error_correction_level
 
 }
 
-function placeQR(link, error_correction_level = 'M', bg_color = '#ffffff', qr_color = '#000000', width = 350, height = 400, page = null, scale = 1, offsetX = 0, offsetY = 0) {
+function placeQR(link, error_correction_level = 'M', bg_color = '#ffffff', transparent_bg = false, qr_color = '#000000', width = 350, height = 400, page = null, scale = 1, offsetX = 0, offsetY = 0) {
   let i;
   for (i=1; i<41; i++) {
     try {
@@ -100,7 +100,7 @@ function placeQR(link, error_correction_level = 'M', bg_color = '#ffffff', qr_co
 
   // console.log(`offsetX: ${offsetX}, offsetY: ${offsetY}, width: ${width}, height: ${height}, w: ${w}, h: ${h}, norm_fact: ${norm_fact}, scale: ${scale}`);
   page.moveTo(width/2 - w/2 + offsetX*width/2, height/2 - h/2 + offsetY*height/2); // (0, 0) is bottom-left corner
-  page.drawRectangle({width: w, height: h, color: PDFLib.rgb(bg_color.r/255, bg_color.g/255, bg_color.b/255)});
+  page.drawRectangle({width: w, height: h, color: PDFLib.rgb(bg_color.r/255, bg_color.g/255, bg_color.b/255), opacity: transparent_bg ? 0 : 1});
   page.moveTo(width/2 - w/2 + offsetX*width/2, height/2 + h/2 + offsetY*height/2); // (0, 0) is bottom-left corner
   page.drawSvgPath(svg_path, {color: PDFLib.rgb(qr_color.r/255, qr_color.g/255, qr_color.b/255), scale: norm_fact * scale});
   // page.drawText(link);
@@ -127,6 +127,7 @@ async function update(preview = true) {
   links = document.getElementById('msg').value
   file = document.getElementById('file').files[0];
   bg_color = document.getElementById('bg-color').value;
+  transparent_bg = document.getElementById('transparent-bg').checked;
   qr_color = document.getElementById('qr-color').value;
   error_correction_level = document.getElementById('error-correction-level').value;
   scale = document.getElementById('scale').value;
@@ -136,7 +137,7 @@ async function update(preview = true) {
     updateProgressMsg('Loading PDF...');
     file = await file.arrayBuffer();
   }
-  await createPdf(links, file, bg_color, qr_color, error_correction_level, scale, offsetX, offsetY, preview);
+  await createPdf(links, file, bg_color, transparent_bg, qr_color, error_correction_level, scale, offsetX, offsetY, preview);
   postCreatePdf();
 }
 
