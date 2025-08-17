@@ -12,17 +12,17 @@
       <div>
         <h1>VolontQR WebUI</h1>
         <h2>1. Select a background page</h2>
-        <input type="file" id="file" accept=".pdf" style="width: 100%; box-sizing: border-box; font-family: monospace; font-size: 16px;" />
+        <input type="file" id="file" accept=".pdf" style="width: 100%; box-sizing: border-box; font-family: monospace; font-size: 16px;" onchange="update()"/>
         <h2>2. Paste your links (one per line)</h2>
-        <textarea id="msg" style="width: 100%; height: 50%; box-sizing: border-box; font-family: monospace; font-size: 16px;" placeholder="Enter text to generate QR code"></textarea>
+        <textarea id="msg" style="width: 100%; height: 50%; box-sizing: border-box; font-family: monospace; font-size: 16px;" placeholder="Enter text to generate QR code" onchange="update()"></textarea>
         <h2>3. (Optional) Pimp your QR!</h2>
-        <input type="color" id="bg-color" name="bg-color" value="#ffffff" />
+        <input type="color" id="bg-color" name="bg-color" value="#ffffff" onchange="update()"/>
         <label for="bg-color">Background Color</label>
-        <input type="color" id="qr-color" name="qr-color" value="#000000" />
+        <input type="color" id="qr-color" name="qr-color" value="#000000" onchange="update()"/>
         <label for="qr-color">QR Color</label>
         <h2>4. Preview and download the result</h2>
-        <button id="preview" onclick="update(true)">Preview First Page</button>
-        <button id="generate" onclick="update()">Generate All</button>
+        <button id="preview" onclick="update()">Preview First Page</button>
+        <button id="generate" onclick="update(false)">Generate All</button>
         <progress id="progress" style="width: 100%; height: 20px;"></progress>
       </div>
       <iframe id="pdf" style="width: 100%; height: 100%;"></iframe>
@@ -137,7 +137,7 @@
       r = qr.createSvgTag({ alt: '</svg>puke'});
       return r;
     };
-    async function update(preview = false) {
+    async function update(preview = true) {
       preCreatePdf();
       links = document.getElementById('msg').value
       file = document.getElementById('file').files[0];
@@ -150,6 +150,6 @@
       await createPdf(links, file, bg_color, qr_color, preview);
       postCreatePdf();
     }
-    update(true); // Initial preview
+    update(); // Initial preview
   </script>
 </html>
