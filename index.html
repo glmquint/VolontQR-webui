@@ -15,15 +15,33 @@
         <h2>1. Select a background page</h2>
         <input type="file" id="file" accept=".pdf" style="width: 100%; box-sizing: border-box; font-family: monospace; font-size: 16px;" onchange="update()"/>
         <h2>2. Paste your links (one per line)</h2>
-        <textarea id="msg" style="width: 100%; height: 50%; box-sizing: border-box; font-family: monospace; font-size: 16px;" placeholder="Enter text to generate QR code" onchange="update()"></textarea>
+        <textarea id="msg" style="width: 100%; height: 40%; box-sizing: border-box; font-family: monospace; font-size: 16px;" placeholder="Enter text to generate QR code" onchange="update()"></textarea>
         <h2>3. (Optional) Pimp your QR!</h2>
         <input type="color" id="bg-color" name="bg-color" value="#ffffff" onchange="update()"/>
         <label for="bg-color">Background Color</label>
+        <br>
         <input type="color" id="qr-color" name="qr-color" value="#000000" onchange="update()"/>
         <label for="qr-color">QR Color</label>
+        <br>
+        <select name="error-correction-level" id="error-correction-level" onchange="update()">
+          <option value="L">L(7%)</option>
+          <option value="M" selected="selected">M(15%)</option>
+          <option value="Q">Q(25%)</option>
+          <option value="H">H(30%)</option>
+        </select>
+        <label for="error-correction-level">Error Correction Level</label>
+        <br>
+        <input type="range" id="scale" name="scale" value="0.5" step="0.01" min="0.01" max="1" onchange="update()"/>
+        <label for="scale">QR Code Scale</label>
+        <br>
+        <input type="range" id="offsetX" name="offsetX" value="0" min="-1" max="1" step="0.01" onchange="update()"/>
+        <label for="offsetX">QR Code Offset X</label>
+        <br>
+        <input type="range" id="offsetY" name="offsetY" value="0" min="-1" max="1" step="0.01" onchange="update()"/>
+        <label for="offsetY">QR Code Offset Y</label>
         <h2>4. Preview and download the result</h2>
         <button id="preview" onclick="update()">Preview First Page</button>
-        <button id="generate" onclick="update(false)">Generate All</button>
+        <button id="generate" onclick="update(preview = false)">Generate All</button>
         <progress id="progress" style="width: 100%; height: 20px;"></progress>
       </div>
       <iframe id="pdf" style="width: 100%; height: 100%;"></iframe>

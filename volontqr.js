@@ -8,7 +8,7 @@ function preCreatePdf() {
   btn.innerText = 'Generating...';
 
   const progress = document.getElementById('progress');
-  progress.removeAttribute('max'); 
+  progress.removeAttribute('value');
 
 }
 function postCreatePdf() {
@@ -19,7 +19,7 @@ function postCreatePdf() {
   const progress = document.getElementById('progress');
   progress.value = 0; // Reset progress bar
 }
-async function createPdf(links, file, bg_color, qr_color, preview = false) {
+async function createPdf(links, file, bg_color, qr_color, error_correction_level, scale, offsetX, offsetY, preview=true) {
   updateProgressMsg('Creating PDF...');
   const pdfDoc = await PDFLib.PDFDocument.create();
 
@@ -34,16 +34,6 @@ async function createPdf(links, file, bg_color, qr_color, preview = false) {
   const filePdfDoc = file ? await PDFLib.PDFDocument.load(file) : null;
 
   await Promise.all(links.map(async link => {
-    let i;
-    for (i=1; i<41; i++) {
-      try {
-        svg_tag = create_qrcode(link, i, 'M', 'Byte', 'UTF-8');
-        break;
-      } catch {
-        continue;
-      }
-    }
-    let svg_path = svg_tag.split('<path d="')[1].split(' " stroke="transparent"')[0];
 
     width = 350;
     height = 400;
@@ -57,15 +47,8 @@ async function createPdf(links, file, bg_color, qr_color, preview = false) {
     } else {
       page = await pdfDoc.addPage([width, height]);
     }
-    // TODO: use https://kazuhikoarase.github.io/qrcode-generator/js/demo/
-    // to find all generated QR codes sizes
-    w = [58, 66, 74, 82, 90, 98, 106, 114, 122, 130][i-1];
-    h = w;
-    page.moveTo(width/2 - w/2, height/2 - h/2); // (0, 0) is bottom-left corner
-    page.drawRectangle({width: w, height: h, color: PDFLib.rgb(bg_color.r/255, bg_color.g/255, bg_color.b/255)});
-    page.moveTo(width/2 - w/2, height/2 + h/2); // (0, 0) is bottom-left corner
-    page.drawSvgPath(svg_path, {color: PDFLib.rgb(qr_color.r/255, qr_color.g/255, qr_color.b/255)});
-    // page.drawText(link);
+
+    placeQR(link, error_correction_level, bg_color, qr_color, width, height, page, scale, offsetX, offsetY);
 
     console.log('Page created for link:', link);
     // progress.value += 1; // Increment progress bar
@@ -94,6 +77,35 @@ async function createPdf(links, file, bg_color, qr_color, preview = false) {
 
 }
 
+function placeQR(link, error_correction_level = 'M', bg_color = '#ffffff', qr_color = '#000000', width = 350, height = 400, page = null, scale = 1, offsetX = 0, offsetY = 0) {
+  let i;
+  for (i=1; i<41; i++) {
+    try {
+      svg_tag = create_qrcode(link, i, error_correction_level, 'Byte', 'UTF-8');
+      break;
+    } catch {
+      continue;
+    }
+  }
+  let svg_path = svg_tag.split('<path d="')[1].split(' " stroke="transparent"')[0];
+
+  // TODO: use https://kazuhikoarase.github.io/qrcode-generator/js/demo/
+  // to find all generated QR codes sizes
+  w = [58, 66, 74, 82, 90, 98, 106, 114, 122, 130][i-1]; // Width of the QR code
+  h = w;
+  shortest_side = Math.min(width, height);
+  norm_fact = shortest_side / w;
+  w *= norm_fact * scale;
+  h *= norm_fact * scale;
+
+  // console.log(`offsetX: ${offsetX}, offsetY: ${offsetY}, width: ${width}, height: ${height}, w: ${w}, h: ${h}, norm_fact: ${norm_fact}, scale: ${scale}`);
+  page.moveTo(width/2 - w/2 + offsetX*width/2, height/2 - h/2 + offsetY*height/2); // (0, 0) is bottom-left corner
+  page.drawRectangle({width: w, height: h, color: PDFLib.rgb(bg_color.r/255, bg_color.g/255, bg_color.b/255)});
+  page.moveTo(width/2 - w/2 + offsetX*width/2, height/2 + h/2 + offsetY*height/2); // (0, 0) is bottom-left corner
+  page.drawSvgPath(svg_path, {color: PDFLib.rgb(qr_color.r/255, qr_color.g/255, qr_color.b/255), scale: norm_fact * scale});
+  // page.drawText(link);
+}
+
 function hexToRgb(hex) {
   var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
   return result ? {
@@ -116,11 +128,15 @@ async function update(preview = true) {
   file = document.getElementById('file').files[0];
   bg_color = document.getElementById('bg-color').value;
   qr_color = document.getElementById('qr-color').value;
+  error_correction_level = document.getElementById('error-correction-level').value;
+  scale = document.getElementById('scale').value;
+  offsetX = Number(document.getElementById('offsetX').value);
+  offsetY = Number(document.getElementById('offsetY').value);
   if (file) {
     updateProgressMsg('Loading PDF...');
     file = await file.arrayBuffer();
   }
-  await createPdf(links, file, bg_color, qr_color, preview);
+  await createPdf(links, file, bg_color, qr_color, error_correction_level, scale, offsetX, offsetY, preview);
   postCreatePdf();
 }
 
