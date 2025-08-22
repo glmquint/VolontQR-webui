@@ -69,7 +69,7 @@ async function createPdf(links, file, bg_color, transparent_bg, qr_color, error_
       var link=document.createElement('a');
       link.href=window.URL.createObjectURL(blob);
       link.target = 'blank'
-      // link.download="tickets.pdf";
+      link.download="tickets.pdf";
       link.click();
       link.remove();
     }
